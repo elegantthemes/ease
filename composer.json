@@ -3,22 +3,13 @@
   "description": "Utilities that make reading and writing PHP code more convenient and enjoyable",
   "type": "library",
   "license": "GPL-v2-or-later",
+  "version": "1.0.0",
   "authors": [
     {
       "name": "Elegant Themes",
       "email": "dustin@elegantthemes.com"
     }
   ],
-  "repositories": [
-    {
-      "type": "path",
-      "url": "../ease",
-      "only": "elegantthemes/ease"
-    }
-  ],
-  "require": {
-    "elegantthemes/ease": "*"
-  },
   "autoload": {
     "files": [
       "src/functions.php"
