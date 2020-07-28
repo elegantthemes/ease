@@ -1,0 +1,30 @@
+{
+  "name": "elegantthemes/ease",
+  "description": "Utilities that make reading and writing PHP code more convenient and enjoyable",
+  "type": "library",
+  "license": "GPL-v2-or-later",
+  "authors": [
+    {
+      "name": "Elegant Themes",
+      "email": "dustin@elegantthemes.com"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "path",
+      "url": "../ease",
+      "only": "elegantthemes/ease"
+    }
+  ],
+  "require": {
+    "elegantthemes/ease": "*"
+  },
+  "autoload": {
+    "files": [
+      "src/functions.php"
+    ],
+    "psr-4": {
+      "ET\\Ease\\": "src/"
+    }
+  }
+}
