@@ -14,7 +14,7 @@ class Utils {
 	/**
 	 * Sort arguments being passed through to callbacks. See {@see self::_userSort()}.
 	 *
-	 * @since ??
+	 * @since 1.0.0
 	 */
 	protected array $sort_arguments = [
 		'array'      => array(),
@@ -22,6 +22,82 @@ class Utils {
 		'sort'       => '__return_false',
 		'comparison' => '__return_false',
 	];
+
+	/**
+	 * Sort using a custom function accounting for the common undefined order
+	 * pitfall due to a return value of 0.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param  array &   $array                Array to sort
+	 * @param  callable  $sort_function        "usort", "uasort" or "uksort"
+	 * @param  callable  $comparison_function  Custom comparison function
+	 *
+	 * @return array
+	 */
+	protected function _userSort( &$array, $sort_function, $comparison_function ) {
+		$allowed_sort_functions = array( 'usort', 'uasort', 'uksort' );
+
+		if ( ! $this->includes( $allowed_sort_functions, $sort_function ) ) {
+			_doing_it_wrong( __FUNCTION__, esc_html__( 'Only custom sorting functions can be used.', 'et_core' ), esc_html( et_get_theme_version() ) );
+		}
+
+		// Use properties temporarily to pass values in order to preserve PHP 5.2 support.
+		$this->sort_arguments['array']      = $array;
+		$this->sort_arguments['sort']       = $sort_function;
+		$this->sort_arguments['comparison'] = $comparison_function;
+		$this->sort_arguments['array_map']  = 'uksort' === $sort_function
+			? array_flip( array_keys( $array ) )
+			: array_values( $array );
+
+		$sort_function( $array, array( $this, '_userSortCallback' ) );
+
+		$this->sort_arguments['array']      = array();
+		$this->sort_arguments['array_map']  = array();
+		$this->sort_arguments['sort']       = '__return_false';
+		$this->sort_arguments['comparison'] = '__return_false';
+
+		return $array;
+	}
+
+	/**
+	 * Sort callback only meant to acompany self::sort().
+	 * Do not use outside of self::_user_sort().
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param  mixed  $a
+	 * @param  mixed  $b
+	 *
+	 * @return integer
+	 */
+	protected function _userSortCallback( $a, $b ) {
+		// @phpcs:ignore Generic.PHP.ForbiddenFunctions.Found
+		$result = (int) call_user_func( $this->sort_arguments['comparison'], $a, $b );
+
+		if ( 0 !== $result ) {
+			return $result;
+		}
+
+		if ( 'uksort' === $this->sort_arguments['sort'] ) {
+			// Intentional isset() use for performance reasons.
+			$a_order = isset( $this->sort_arguments['array_map'][ $a ] ) ?
+				$this->sort_arguments['array_map'][ $a ] : false;
+			$b_order = isset( $this->sort_arguments['array_map'][ $b ] ) ?
+				$this->sort_arguments['array_map'][ $b ] : false;
+		} else {
+			$a_order = array_search( $a, $this->sort_arguments['array_map'] );
+			$b_order = array_search( $b, $this->sort_arguments['array_map'] );
+		}
+
+		if ( false === $a_order || false === $b_order ) {
+			// This should not be possible so we fallback to the undefined
+			// sorting behavior by returning 0.
+			return 0;
+		}
+
+		return $a_order - $b_order;
+	}
 
 	public function _arrayPickCallback( $item ) {
 		$pick  = $this->_pick;
@@ -81,7 +157,7 @@ class Utils {
 	/**
 	 * Flattens a multi-dimensional array.
 	 *
-	 * @since ??
+	 * @since 1.0.0
 	 *
 	 * @param array $array An array to flatten.
 	 */
@@ -127,7 +203,7 @@ class Utils {
 	/**
 	 * Wrapper for {@see self::array_get()} that sanitizes the value before returning it.
 	 *
-	 * @since ??
+	 * @since 1.0.0
 	 *
 	 * @param array  $array     An array which contains value located at `$address`.
 	 * @param string $address   The location of the value within `$array` (dot notation).
@@ -212,7 +288,7 @@ class Utils {
 	/**
 	 * Update a nested array value found at the provided path using {@see array_merge()}.
 	 *
-	 * @since 4.0.7
+	 * @since 1.0.0
 	 *
 	 * @param array $array
 	 * @param $path
@@ -265,8 +341,7 @@ class Utils {
 	 * Windows actually supports both styles, even mixed together. However, its better not
 	 * to mix them (especially when doing string comparisons on paths).
 	 *
-	 * @since 4.0.8     Use {@see wp_normalize_path()} if it exists. Remove all occurrences of '..' from paths.
-	 * @since 3.0.52
+	 * @since 1.0.0
 	 *
 	 * @param string $path
 	 *
@@ -296,14 +371,13 @@ class Utils {
 	 *      // Returns '/this/is/a/path/to/file.php'
 	 *     ```
 	 *
-	 * @since ??
+	 * @since 1.0.0
 	 *
 	 * @param string|string[] ...$parts
 	 *
 	 * @return string
 	 */
-	public function path() {
-		$parts = func_get_args();
+	public function path( ...$parts ): string {
 		$path  = '';
 
 		if ( 1 === count( $parts ) && is_array( reset( $parts ) ) ) {
@@ -366,7 +440,7 @@ class Utils {
 	/**
 	 * Recursively traverses an array and escapes the keys and values according to passed escaping function.
 	 *
-	 * @since ??
+	 * @since 1.0.0
 	 *
 	 * @param array  $values            The array to be recursively escaped.
 	 * @param string $escaping_function The escaping function to be used on keys and values. Default 'esc_html'. Optional.
@@ -399,7 +473,7 @@ class Utils {
 	/**
 	 * Whether or not a string starts with a substring.
 	 *
-	 * @since ??
+	 * @since 1.0.0
 	 *
 	 * @param string $string
 	 * @param string $substring
@@ -413,7 +487,7 @@ class Utils {
 	/**
 	 * Convert string to camel case format.
 	 *
-	 * @since ??
+	 * @since 1.0.0
 	 *
 	 * @param string $string Original string data.
 	 * @param array  $no_strip Additional regex pattern exclusion.
@@ -437,7 +511,7 @@ class Utils {
 	/**
 	 * Equivalent of usort but preserves relative order of equally weighted values.
 	 *
-	 * @since ??
+	 * @since 1.0.0
 	 *
 	 * @param array &$array
 	 * @param callable $comparison_function
@@ -451,7 +525,7 @@ class Utils {
 	/**
 	 * Equivalent of uasort but preserves relative order of equally weighted values.
 	 *
-	 * @since ??
+	 * @since 1.0.0
 	 *
 	 * @param array &$array
 	 * @param callable $comparison_function
@@ -465,7 +539,7 @@ class Utils {
 	/**
 	 * Equivalent of uksort but preserves relative order of equally weighted values.
 	 *
-	 * @since ??
+	 * @since 1.0.0
 	 *
 	 * @param array &$array
 	 * @param callable $comparison_function
@@ -474,79 +548,5 @@ class Utils {
 	 */
 	public function uksort( &$array, $comparison_function ) {
 		return $this->_userSort( $array, 'uksort', $comparison_function );
-	}
-
-	/**
-	 * Sort using a custom function accounting for the common undefined order
-	 * pitfall due to a return value of 0.
-	 *
-	 * @since ??
-	 *
-	 * @param array &$array Array to sort
-	 * @param callable $sort_function "usort", "uasort" or "uksort"
-	 * @param callable $comparison_function Custom comparison function
-	 *
-	 * @return array
-	 */
-	protected function _userSort( &$array, $sort_function, $comparison_function ) {
-		$allowed_sort_functions = array( 'usort', 'uasort', 'uksort' );
-
-		if ( ! $this->includes( $allowed_sort_functions, $sort_function ) ) {
-			_doing_it_wrong( __FUNCTION__, esc_html__( 'Only custom sorting functions can be used.', 'et_core' ), esc_html( et_get_theme_version() ) );
-		}
-
-		// Use properties temporarily to pass values in order to preserve PHP 5.2 support.
-		$this->sort_arguments['array']      = $array;
-		$this->sort_arguments['sort']       = $sort_function;
-		$this->sort_arguments['comparison'] = $comparison_function;
-		$this->sort_arguments['array_map']  = 'uksort' === $sort_function
-			? array_flip( array_keys( $array ) )
-			: array_values( $array );
-
-		$sort_function( $array, array( $this, '_userSortCallback' ) );
-
-		$this->sort_arguments['array']      = array();
-		$this->sort_arguments['array_map']  = array();
-		$this->sort_arguments['sort']       = '__return_false';
-		$this->sort_arguments['comparison'] = '__return_false';
-
-		return $array;
-	}
-
-	/**
-	 * Sort callback only meant to acompany self::sort().
-	 * Do not use outside of self::_user_sort().
-	 *
-	 * @since ??
-	 *
-	 * @param mixed $a
-	 * @param mixed $b
-	 *
-	 * @return integer
-	 */
-	protected function _userSortCallback( $a, $b ) {
-		// @phpcs:ignore Generic.PHP.ForbiddenFunctions.Found
-		$result = (int) call_user_func( $this->sort_arguments['comparison'], $a, $b );
-
-		if ( 0 !== $result ) {
-			return $result;
-		}
-
-		if ( 'uksort' === $this->sort_arguments['sort'] ) {
-			// Intentional isset() use for performance reasons.
-			$a_order = isset( $this->sort_arguments['array_map'][ $a ] ) ? $this->sort_arguments['array_map'][ $a ] : false;
-			$b_order = isset( $this->sort_arguments['array_map'][ $b ] ) ? $this->sort_arguments['array_map'][ $b ] : false;
-		} else {
-			$a_order = array_search( $a, $this->sort_arguments['array_map'] );
-			$b_order = array_search( $b, $this->sort_arguments['array_map'] );
-		}
-
-		if ( false === $a_order || false === $b_order ) {
-			// This should not be possible so we fallback to the undefined
-			// sorting behavior by returning 0.
-			return 0;
-		}
-
-		return $a_order - $b_order;
 	}
 }
