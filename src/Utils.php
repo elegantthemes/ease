@@ -300,6 +300,26 @@ class Utils {
 		$this->arraySet( $array, $path, array_merge( $current_value, $value ) );
 	}
 
+	/**
+	 * Whether or not a string ends with a substring.
+	 *
+	 * @since 1.1.1
+	 *
+	 * @param  string  $haystack  The string to look in.
+	 * @param  string  $needle    The string to look for.
+	 *
+	 * @return bool
+	 */
+	public function endsWith( string $haystack, string $needle ): bool {
+		$length = strlen( $needle );
+
+		if ( 0 === $length ) {
+			return true;
+		}
+
+		return ( substr( $haystack, -$length ) === $needle );
+	}
+
 	public function ensureDirectoryExists( $path ): bool {
 		if ( file_exists( $path ) ) {
 			return is_dir( $path );
