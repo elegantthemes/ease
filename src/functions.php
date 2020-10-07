@@ -29,6 +29,10 @@ function et_debug( $msg, int $bt_index = 4, bool $log_ajax = true ): void {
  * @since 1.1.0
  */
 function et_error( $msg, $bt_index = 4, $log_ajax = true ): void {
+	if ( ! is_scalar( $msg ) ) {
+		$msg = print_r( $msg, true );
+	}
+
 	Logger::error( "[ERROR]: {$msg}", $bt_index, $log_ajax );
 }
 
@@ -39,6 +43,10 @@ function et_error( $msg, $bt_index = 4, $log_ajax = true ): void {
  * @since 1.1.0
  */
 function et_wrong( $msg, bool $error = false ): void {
+	if ( ! is_scalar( $msg ) ) {
+		$msg = print_r( $msg, true );
+	}
+
 	$msg = "You're Doing It Wrong! {$msg}";
 
 	if ( $error ) {
