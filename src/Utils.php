@@ -491,6 +491,19 @@ class Utils {
 	}
 
 	/**
+	 * Pass-through function for acknowledging a previously sanitized value
+	 *
+	 * @since 1.1.2
+	 *
+	 * @param mixed $value Value that has already been sanitized during the current request
+	 *
+	 * @return mixed
+	 */
+	public function sanitizedPreviously( $value ) {
+		return $value;
+	}
+
+	/**
 	 * Whether or not a string starts with a substring.
 	 *
 	 * @since 1.0.0
