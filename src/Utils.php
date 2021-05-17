@@ -131,21 +131,21 @@ class Utils {
 
 	/**
 	 * Returns `true` if all values in `$array` are not empty, `false` otherwise.
-	 * If `$condition` is provided then values are checked against it instead of `empty()`.
+	 * If `$callback` is provided then values are passed to it instead of {@see empty()} (it should return a booleon value).
 	 *
-	 * @param array $array
-	 * @param bool  $condition Compare values to this instead of `empty()`. Optional.
+	 * @param array     $array
+	 * @param callable  $callback  Pass each value to callback instead of {@see empty()}. Optional.
 	 */
-	public function all( array $array, $condition = null ): bool {
-		if ( null === $condition ) {
+	public function all( array $array, $callback = null ): bool {
+		if ( null === $callback ) {
 			foreach( $array as $key => $value ) {
 				if ( empty( $value ) ) {
 					return false;
 				}
 			}
-		} else {
+		} else if ( is_callable( $callback ) ) {
 			foreach( $array as $key => $value ) {
-				if ( $value !== $condition ) {
+				if ( ! $callback( $value ) ) {
 					return false;
 				}
 			}
