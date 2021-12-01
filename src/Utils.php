@@ -129,6 +129,20 @@ class Utils {
 		return 0;
 	}
 
+	public function __call( $name, $args ) {
+		$class = __CLASS__;
+
+		if ( method_exists( $this, $name ) ) {
+			throw new \Exception( "Call to protected or private method: {$class}::{$name}() from out of scope!" );
+		}
+
+		if ( method_exists( 'ET_Core_Data_Utils', $name ) ) {
+			return ET_Core_Data_Utils::instance()->$name( ...$args );
+		}
+
+		throw new \Exception( "Call to undefined method: {$class}::{$name}()" );
+	}
+
 	/**
 	 * Returns `true` if all values in `$array` are not empty, `false` otherwise.
 	 * If `$callback` is provided then values are passed to it instead of {@see empty()} (it should return a booleon value).
