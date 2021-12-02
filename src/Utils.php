@@ -137,7 +137,7 @@ class Utils {
 		}
 
 		if ( method_exists( 'ET_Core_Data_Utils', $name ) ) {
-			return ET_Core_Data_Utils::instance()->$name( ...$args );
+			return \ET_Core_Data_Utils::instance()->$name( ...$args );
 		}
 
 		throw new \Exception( "Call to undefined method: {$class}::{$name}()" );
