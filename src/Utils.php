@@ -61,6 +61,15 @@ class Utils {
 	}
 
 	/**
+	 * Wrapper for {@see self::_userSort()}. Fixes conflict with Divi code.
+	 *
+	 * @deprecated {@see self::_userSort()}
+	 */
+	protected function _user_sort( &$array, $sort_function, $comparison_function ) {
+		return $this->_userSort( $array, $sort_function, $comparison_function );
+	}
+
+	/**
 	 * Sort callback only meant to acompany self::sort().
 	 * Do not use outside of self::_user_sort().
 	 *
@@ -281,6 +290,15 @@ class Utils {
 		}
 
 		$current = $value;
+	}
+
+	/**
+	 * Wrapper for {@see self::arraySet()}. Fixes conflict with Divi code.
+	 *
+	 * @deprecated {@see self::arraySet()}
+	 */
+	public function array_set( &$array, $path, $value ) {
+		$this->arraySet( $array, $path, $value );
 	}
 
 	public function arraySortBy( $array, $key_or_prop ) {
