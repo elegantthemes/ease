@@ -2,8 +2,7 @@
   "name": "elegantthemes/ease",
   "description": "Utilities that make reading and writing PHP code more convenient and enjoyable",
   "type": "library",
-  "license": "GPL-v2-or-later",
-  "version": "1.2.4",
+  "license": "GPL-2.0-or-later",
   "authors": [
     {
       "name": "Elegant Themes",
