@@ -65,16 +65,18 @@ class Logger {
 				$bt_index--;
 			}
 
-			// We need two stacks to get all the data we need so let's go up one more
-			$bt_index--;
+			// We need two stacks to get all the data we need so let's go up one more when possible.
+			if ( $bt_index > 0 ) {
+				$bt_index--;
+			}
 		}
 
 		$stack = $backtrace[ $bt_index ];
 		$file  = et_()->arrayGet( $stack, 'file', '<unknown file>' );
 		$line  = et_()->arrayGet( $stack, 'line', '<unknown line>' );
 
-		// Name of the function and class (if applicable) are in the previous stack (stacks are in reverse order)
-		$stack    = $backtrace[ $bt_index + 1 ];
+		// Name of the function and class (if applicable) are in the previous stack (stacks are in reverse order).
+		$stack    = $backtrace[ $bt_index + 1 ] ?? [];
 		$class    = et_()->arrayGet( $stack, 'class', '' );
 		$function = et_()->arrayGet( $stack, 'function', '<unknown function>' );
 

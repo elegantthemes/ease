@@ -1,0 +1,58 @@
+name: Maybe Create New Release
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  #==========================#
+  # 1. Create GitHub Release #
+  #==========================#
+  CreateGitHubRelease:
+    if: "contains(toJSON(github.event.commits.*.message), 'build: [release]')"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.ETSTAGING_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          git config pull.rebase false
+          git pull --tags
+          git tag -l --sort=version:refname | tail -n 1 > "${GITHUB_WORKSPACE}/../current-version"
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+
+      - name: Generate version
+        id: generate-version
+        uses: HardNorth/github-version-generate@v1.4.0
+        with:
+          version-source: file
+          version-file: ${{ github.workspace }}/../current-version
+          version-file-extraction-pattern: '[0-9.]+'
+          next-version-increment-major: false
+          next-version-increment-minor: false
+
+      - name: Create Release
+        id: create-release
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.ETSTAGING_TOKEN }}
+          commit: master
+          tag: ${{ steps.generate-version.outputs.NEXT_VERSION }}
+
+      - name: Trigger Packagist Update
+        run: >
+          curl
+          -X POST
+          -H 'content-type:application/json'
+          "https://packagist.org/api/update-package?username=elegantthemes&apiToken=${{ secrets.PACKAGIST_TOKEN }}"
+          -d '{"repository":{"url":"https://packagist.org/packages/elegantthemes/ease"}}'
